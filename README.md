@@ -1,4 +1,4 @@
-# ![Icon](icon.png) .NET - Flint
+# ![Icon](logo.png)
 
 Flint is a lightweight C# library that provides fast text matching utilities using the [Aho-Corasick algorithm](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm)..
 

@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
-using Flint;
-using Flint.TextProcessing;
+﻿using NSubstitute;
 
 namespace Flint.UnitTests;
 
 [TestClass]
 public class TextMatcherTests
 {
-    private static readonly string[] SingleA = new[] { "a" };
-    private static readonly string[] SingleX = new[] { "x" };
+    private static readonly string[] _singleA = ["a"];
+    private static readonly string[] _singleX = ["x"];
 
     private const string Lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
     private const string LoremWithJedi = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna Jedi.";
@@ -21,20 +15,20 @@ public class TextMatcherTests
     [TestMethod]
     public void Given_NullPatterns_When_Creating_Then_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new TextMatcher((IEnumerable<string>)null!));
+        Assert.Throws<ArgumentNullException>(() => new TextMatcher(null!));
     }
 
     [TestMethod]
     public void Given_Patterns_When_FindWithNullText_Then_ThrowsArgumentNullException()
     {
-        var Matcher = new TextMatcher(SingleA);
+        var Matcher = new TextMatcher(_singleA);
         Assert.Throws<ArgumentNullException>(() => Matcher.Find(null!));
     }
 
     [TestMethod]
     public void Given_EmptyPatterns_When_Find_Then_ReturnsEmpty()
     {
-        var Matcher = new TextMatcher(Array.Empty<string>());
+        var Matcher = new TextMatcher([]);
 
         var results = Matcher.Find("any text");
 
@@ -45,7 +39,7 @@ public class TextMatcherTests
     [TestMethod]
     public void Given_Patterns_When_FindWithNoValues_Then_ReturnsEmpty()
     {
-        var Matcher = new TextMatcher(SingleX);
+        var Matcher = new TextMatcher(_singleX);
 
         var results = Matcher.Find("abc");
 
@@ -63,7 +57,7 @@ public class TextMatcherTests
 
         var Values = Matcher.Find("aa").ToList();
 
-        Assert.HasCount<Match>(3, Values);
+        Assert.HasCount(3, Values);
 
         Assert.AreEqual(0, Values[0].StartIndex);
         Assert.AreEqual(0, Values[0].EndIndex);
@@ -100,7 +94,7 @@ public class TextMatcherTests
         }
 
         var darthValues = map[Darth].ToList();
-        Assert.HasCount<Match>(0, darthValues);
+        Assert.HasCount(0, darthValues);
     }
 
     [TestMethod]
@@ -127,5 +121,96 @@ public class TextMatcherTests
                 Assert.IsTrue(Values.Any(m => m.Value == pattern && m.StartIndex == expectedIndex && m.EndIndex == expectedIndex + pattern.Length - 1));
             }
         }
+    }
+
+    [TestMethod]
+    public void Given_Patterns_When_ReplaceWithNullText_Then_ThrowsArgumentNullException()
+    {
+        var matcher = new TextMatcher(_singleA);
+        Assert.Throws<ArgumentNullException>(() => matcher.Replace(null!, "x"));
+    }
+
+    [TestMethod]
+    public void Given_Patterns_When_ReplaceWithNullReplacement_Then_ThrowsArgumentNullException()
+    {
+        var matcher = new TextMatcher(_singleA);
+        Assert.Throws<ArgumentNullException>(() => matcher.Replace("abc", (string)null!));
+    }
+
+    [TestMethod]
+    public void Given_Patterns_When_ReplaceWithNullProvider_Then_ThrowsArgumentNullException()
+    {
+        var matcher = new TextMatcher(_singleA);
+        Assert.Throws<ArgumentNullException>(() => matcher.Replace("abc", (Func<Match, string>)null!));
+    }
+
+    [TestMethod]
+    public void Given_Patterns_When_ReplaceSimple_ReplacesAllOccurrences()
+    {
+        var matcher = new TextMatcher(_singleA);
+        var result = matcher.Replace("banana", "x");
+        Assert.AreEqual("bxnxnx", result);
+    }
+
+    [TestMethod]
+    public void Given_Patterns_When_ReplaceWithProvider_UsesProviderForEachMatch()
+    {
+        var patterns = new[] { "Jedi" };
+        var matcher = new TextMatcher(patterns);
+
+        var result = matcher.Replace(LoremWithJedi, m => $"[{m.Value}]");
+
+        Assert.Contains("[Jedi]", result);
+    }
+
+    [TestMethod]
+    public void Given_OverlappingPatterns_When_Replace_SkipsOverlappingMatches()
+    {
+        var patterns = Substitute.For<IEnumerable<string>>();
+        patterns.GetEnumerator().Returns(_ => new List<string> { "a", "aa" }.GetEnumerator());
+
+        var matcher = new TextMatcher(patterns);
+        var result = matcher.Replace("aa", "-");
+
+        Assert.AreEqual("--", result);
+    }
+
+    [TestMethod]
+    public void Given_Replacements_When_CountDiffersFromPatterns_Then_ThrowsArgumentException()
+    {
+        var patterns = new[] { "a", "b" };
+        var matcher = new TextMatcher(patterns);
+
+        var shortReplacements = new[] { "x" };
+        Assert.Throws<ArgumentException>(() => matcher.Replace("ab", shortReplacements));
+    }
+
+    [TestMethod]
+    public void Given_Replacements_When_MappingByIndex_ReplacesEachPattern()
+    {
+        var patterns = new[] { "Lorem", "elit", "magna" };
+        var replacements = new[] { "EPIC", "TRUE", "REPLACEMENT" };
+        var matcher = new TextMatcher(patterns);
+
+        var result = matcher.Replace(Lorem, replacements);
+
+        Assert.Contains("EPIC", result);
+        Assert.DoesNotContain("Lorem", result);
+        Assert.Contains("TRUE", result);
+        Assert.DoesNotContain("elit", result);
+        Assert.Contains("REPLACEMENT", result);
+        Assert.DoesNotContain("magna", result);
+    }
+
+    [TestMethod]
+    public void Given_OverlappingPatterns_When_ReplaceWithReplacements_UsesFirstMatchingPatternPerPosition()
+    {
+        var patterns = new[] { "a", "aa" };
+        var replacements = new[] { "-", "=" };
+        var matcher = new TextMatcher(patterns);
+
+        var result = matcher.Replace("aa", replacements);
+
+        Assert.AreEqual("--", result);
     }
 }

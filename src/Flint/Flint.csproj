@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <Version>1.0.0</Version>
         <Summary>A lightweight library designed for high-performance keyword extraction and replacement from text.</Summary>
         <Description>A lightweight library designed for high-performance keyword extraction and replacement from text.</Description>
         <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
@@ -12,6 +13,9 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <NoWarn>$(NoWarn);IDE0058;</NoWarn>
+        <PackageTags>text aho-corasick matching replacer replacing</PackageTags>
+        <RepositoryUrl>https://github.com/StynH/.NET-Flint</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

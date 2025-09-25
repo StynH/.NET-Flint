@@ -69,19 +69,13 @@ public class AhoCorasick
         }
     }
 
-    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns)
+    internal static void PerformSearchWithIds(TrieNode root, string text, Action<int, int> onMatch)
     {
         Assertions.ThrowIfArgumentIsNull(root, nameof(root));
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
-        Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
-
-        if (!patterns.Any())
-        {
-            return [];
-        }
+        Assertions.ThrowIfArgumentIsNull(onMatch, nameof(onMatch));
 
         var node = root;
-        var results = new List<Match>();
 
         for (var i = 0; i < text.Length; ++i)
         {
@@ -95,11 +89,31 @@ public class AhoCorasick
             node = node.Children.TryGetValue(character, out var child) ? child : root;
             foreach (var id in node.Outputs)
             {
-                var match = patterns.ElementAt(id);
-                var patternLength = match.Length;
-                results.Add(new(i - patternLength + 1, i, match));
+                onMatch(i, id);
             }
         }
+    }
+
+    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns)
+    {
+        Assertions.ThrowIfArgumentIsNull(root, nameof(root));
+        Assertions.ThrowIfArgumentIsNull(text, nameof(text));
+        Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
+
+        if (!patterns.Any())
+        {
+            return [];
+        }
+
+        var results = new List<Match>();
+        var patternsList = patterns.ToList();
+
+        PerformSearchWithIds(root, text, (endIndex, id) =>
+        {
+            var match = patternsList.ElementAt(id);
+            var patternLength = match.Length;
+            results.Add(new(endIndex - patternLength + 1, endIndex, match));
+        });
 
         return results;
     }

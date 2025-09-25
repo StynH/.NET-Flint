@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Summary>A lightweight library designed for high-performance keyword extraction and replacement from text.</Summary>
+        <Description>A lightweight library designed for high-performance keyword extraction and replacement from text.</Description>
+        <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+        <LangVersion>13.0</LangVersion>
+        <AssemblyName>Flint</AssemblyName>
+        <Nullable>enable</Nullable>
+        <SignAssembly>true</SignAssembly>
+        <PackageId>Flint</PackageId>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False"/>
+        <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" Visible="False"/>
+    </ItemGroup>
+</Project>

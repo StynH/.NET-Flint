@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="Flint.UnitTests/Flint.UnitTests.csproj" Id="951064d2-9afb-40d3-8e00-7a41cf377508" />
+  <Project Path="src/Flint.UnitTests/Flint.UnitTests.csproj" />
   <Project Path="src/Flint/Flint.csproj" />
 </Solution>

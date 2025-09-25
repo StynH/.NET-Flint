@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Flint\Flint.csproj" />
+    <ProjectReference Include="..\Flint\Flint.csproj" />
   </ItemGroup>
 
 </Project>

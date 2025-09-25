@@ -27,104 +27,104 @@ public class TextMatcherTests
     [TestMethod]
     public void Given_Patterns_When_FindWithNullText_Then_ThrowsArgumentNullException()
     {
-        var matcher = new TextMatcher(SingleA);
-        Assert.Throws<ArgumentNullException>(() => matcher.Find(null!));
+        var Matcher = new TextMatcher(SingleA);
+        Assert.Throws<ArgumentNullException>(() => Matcher.Find(null!));
     }
 
     [TestMethod]
     public void Given_EmptyPatterns_When_Find_Then_ReturnsEmpty()
     {
-        var matcher = new TextMatcher(Array.Empty<string>());
+        var Matcher = new TextMatcher(Array.Empty<string>());
 
-        var results = matcher.Find("any text");
+        var results = Matcher.Find("any text");
 
         Assert.IsNotNull(results);
         Assert.IsFalse(results.Any());
     }
 
     [TestMethod]
-    public void Given_Patterns_When_FindWithNoMatches_Then_ReturnsEmpty()
+    public void Given_Patterns_When_FindWithNoValues_Then_ReturnsEmpty()
     {
-        var matcher = new TextMatcher(SingleX);
+        var Matcher = new TextMatcher(SingleX);
 
-        var results = matcher.Find("abc");
+        var results = Matcher.Find("abc");
 
         Assert.IsNotNull(results);
         Assert.IsFalse(results.Any());
     }
 
     [TestMethod]
-    public void Given_Patterns_When_FindWithOverlappingMatches_Then_ReturnsAllMatches_OrderPreserved()
+    public void Given_Patterns_When_FindWithOverlappingValues_Then_ReturnsAllValues_OrderPreserved()
     {
         var patterns = Substitute.For<IEnumerable<string>>();
         patterns.GetEnumerator().Returns(_ => new List<string> { "a", "aa" }.GetEnumerator());
 
-        var matcher = new TextMatcher(patterns);
+        var Matcher = new TextMatcher(patterns);
 
-        var matches = matcher.Find("aa").ToList();
+        var Values = Matcher.Find("aa").ToList();
 
-        Assert.HasCount<Match>(3, matches);
+        Assert.HasCount<Match>(3, Values);
 
-        Assert.AreEqual(0, matches[0].startIndex);
-        Assert.AreEqual(0, matches[0].endIndex);
-        Assert.AreEqual("a", matches[0].match);
+        Assert.AreEqual(0, Values[0].StartIndex);
+        Assert.AreEqual(0, Values[0].EndIndex);
+        Assert.AreEqual("a", Values[0].Value);
 
-        Assert.AreEqual(0, matches[1].startIndex);
-        Assert.AreEqual(1, matches[1].endIndex);
-        Assert.AreEqual("aa", matches[1].match);
+        Assert.AreEqual(0, Values[1].StartIndex);
+        Assert.AreEqual(1, Values[1].EndIndex);
+        Assert.AreEqual("aa", Values[1].Value);
 
-        Assert.AreEqual(1, matches[2].startIndex);
-        Assert.AreEqual(1, matches[2].endIndex);
-        Assert.AreEqual("a", matches[2].match);
+        Assert.AreEqual(1, Values[2].StartIndex);
+        Assert.AreEqual(1, Values[2].EndIndex);
+        Assert.AreEqual("a", Values[2].Value);
     }
 
     [TestMethod]
     public void Given_Patterns_When_FindMultipleTextsUsingFindAll_Then_ReturnsMapping_ForOneText()
     {
         var patterns = new[] { "Lorem", "elit", "magna" };
-        var matcher = new TextMatcher(patterns);
+        var Matcher = new TextMatcher(patterns);
 
         var texts = new[] { Lorem, Darth };
 
-        var map = matcher.FindAll(texts);
+        var map = Matcher.FindAll(texts);
 
         Assert.IsNotNull(map);
         Assert.IsTrue(map.ContainsKey(Lorem));
         Assert.IsTrue(map.ContainsKey(Darth));
 
-        var matches = map[Lorem].ToList();
+        var Values = map[Lorem].ToList();
         foreach (var pattern in patterns)
         {
             var expectedIndex = Lorem.IndexOf(pattern, StringComparison.Ordinal);
-            Assert.IsTrue(matches.Any(m => m.match == pattern && m.startIndex == expectedIndex && m.endIndex == expectedIndex + pattern.Length - 1));
+            Assert.IsTrue(Values.Any(m => m.Value == pattern && m.StartIndex == expectedIndex && m.EndIndex == expectedIndex + pattern.Length - 1));
         }
 
-        var darthMatches = map[Darth].ToList();
-        Assert.HasCount<Match>(0, darthMatches);
+        var darthValues = map[Darth].ToList();
+        Assert.HasCount<Match>(0, darthValues);
     }
 
     [TestMethod]
     public void Given_Patterns_When_FindMultipleTextsUsingFindAll_Then_ReturnsMapping_ForEachText()
     {
         var patterns = new[] { "Jedi" };
-        var matcher = new TextMatcher(patterns);
+        var Matcher = new TextMatcher(patterns);
 
         var texts = new[] { LoremWithJedi, Darth };
 
-        var map = matcher.FindAll(texts);
+        var map = Matcher.FindAll(texts);
 
         Assert.IsNotNull(map);
 
         foreach (var text in texts)
         {
             Assert.IsTrue(map.ContainsKey(text));
-            var matches = map[text].ToList();
+            var Values = map[text].ToList();
 
             foreach (var pattern in patterns)
             {
                 var expectedIndex = text.IndexOf(pattern, StringComparison.Ordinal);
                 Assert.IsGreaterThanOrEqualTo(0, expectedIndex);
-                Assert.IsTrue(matches.Any(m => m.match == pattern && m.startIndex == expectedIndex && m.endIndex == expectedIndex + pattern.Length - 1));
+                Assert.IsTrue(Values.Any(m => m.Value == pattern && m.StartIndex == expectedIndex && m.EndIndex == expectedIndex + pattern.Length - 1));
             }
         }
     }

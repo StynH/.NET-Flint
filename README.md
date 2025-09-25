@@ -86,6 +86,60 @@ Found 'his' at index 7.
 Found 'he' at index 10.
 ```
 
+### Replace all matches with a single value
+
+```csharp
+using Flint;
+
+var matcher = new TextMatcher(new[] { "cat", "dog" });
+var replaced = matcher.Replace("The dog chased the cat.", "animal");
+Console.WriteLine(replaced);
+```
+
+Output:
+
+```
+The animal chased the animal.
+```
+
+### Replace matches using a function
+
+```csharp
+using Flint;
+
+var matcher = new TextMatcher(new[] { "cat", "dog" });
+var replaced = matcher.Replace(
+    "The dog chased the cat.",
+    match => match.Value.ToUpper()
+);
+Console.WriteLine(replaced);
+```
+
+Output:
+
+```
+The DOG chased the CAT.
+```
+
+### Replace each pattern with a different value
+
+```csharp
+using Flint;
+
+var matcher = new TextMatcher(new[] { "cat", "dog" });
+var replaced = matcher.Replace(
+    "The dog chased the cat.",
+    new[] { "feline", "canine" }
+);
+Console.WriteLine(replaced);
+```
+
+Output:
+
+```
+The canine chased the feline.
+```
+
 ### Load patterns from a file
 
 ```csharp

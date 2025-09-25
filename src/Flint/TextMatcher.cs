@@ -59,33 +59,8 @@ public sealed class TextMatcher
             return text;
         }
 
-        var sb = new StringBuilder(text.Length);
-        var lastIndex = 0;
-
-        foreach (var match in matches)
-        {
-            if (match.StartIndex < lastIndex)
-            {
-                continue;
-            }
-
-            if (match.StartIndex > lastIndex)
-            {
-                sb.Append(text, lastIndex, match.StartIndex - lastIndex);
-            }
-
-            var replacement = replacementProvider(match) ?? string.Empty;
-            sb.Append(replacement);
-
-            lastIndex = match.EndIndex + 1;
-        }
-
-        if (lastIndex < text.Length)
-        {
-            sb.Append(text, lastIndex, text.Length - lastIndex);
-        }
-
-        return sb.ToString();
+        var mapped = matches.Select(m => (m.StartIndex, m.EndIndex, Replacement: replacementProvider(m) ?? string.Empty)).ToList();
+        return BuildReplacedString(text, mapped);
     }
 
     public string Replace(string text, IEnumerable<string> replacements)
@@ -126,32 +101,60 @@ public sealed class TextMatcher
             return text;
         }
 
-        var stringBuilder = new StringBuilder(text.Length);
+        var mapped = idMatches.OrderBy(x => x.Start)
+            .Select(m => (m.Start, m.End, Replacement: replacementsList[m.Id]))
+            .ToList();
+
+        return BuildReplacedString(text, mapped);
+    }
+
+    private static string BuildReplacedString(string text, List<(int Start, int End, string Replacement)> matches)
+    {
+        var finalLength = 0;
         var lastIndex = 0;
 
-        foreach (var (Start, End, Id) in idMatches.OrderBy(x => x.Start))
+        foreach (var (start, end, replacement) in matches)
+        {
+            if (start < lastIndex)
+            {
+                continue;
+            }
+
+            finalLength += start - lastIndex;
+            finalLength += replacement.Length;
+            lastIndex = end + 1;
+        }
+
+        finalLength += text.Length - lastIndex;
+
+        var buffer = new char[finalLength];
+        var bufferIndex = 0;
+        lastIndex = 0;
+
+        foreach (var (Start, End, Replacement) in matches)
         {
             if (Start < lastIndex)
             {
                 continue;
             }
 
-            if (Start > lastIndex)
-            {
-                stringBuilder.Append(text, lastIndex, Start - lastIndex);
-            }
+            var count = Start - lastIndex;
+            text.CopyTo(lastIndex, buffer, bufferIndex, count);
+            bufferIndex += count;
 
-            var replacement = replacementsList[Id] ?? string.Empty;
-            stringBuilder.Append(replacement);
+            Replacement.CopyTo(0, buffer, bufferIndex, Replacement.Length);
+            bufferIndex += Replacement.Length;
 
             lastIndex = End + 1;
         }
 
         if (lastIndex < text.Length)
         {
-            stringBuilder.Append(text, lastIndex, text.Length - lastIndex);
+            var count = text.Length - lastIndex;
+            text.CopyTo(lastIndex, buffer, bufferIndex, count);
+            bufferIndex += count;
         }
 
-        return stringBuilder.ToString();
+        return new string(buffer, 0, bufferIndex);
     }
 }

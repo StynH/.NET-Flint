@@ -1,7 +1,4 @@
-﻿using System.Text;
-using System.Linq;
-
-using Flint.TextProcessing;
+﻿using Flint.TextProcessing;
 
 namespace Flint;
 
@@ -9,21 +6,27 @@ public sealed class TextMatcher
 {
     private readonly TrieNode _root;
     private readonly IEnumerable<string> _patterns;
+    private readonly StringComparison _comparison;
 
-    public TextMatcher(IEnumerable<string> patterns)
+    public TextMatcher(IEnumerable<string> patterns, StringComparison comparison)
     {
         Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
 
         _patterns = patterns;
-        _root = AhoCorasick.BuildTrie(_patterns);
+        _comparison = comparison;
+        _root = AhoCorasick.BuildTrie(_patterns, _comparison);
         AhoCorasick.BuildFailureLinks(_root);
+    }
+
+    public TextMatcher(IEnumerable<string> patterns) : this(patterns, StringComparison.CurrentCulture)
+    {
     }
 
     public IEnumerable<Match> Find(string text)
     {
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
 
-        return AhoCorasick.PerformSearch(_root, text, _patterns);
+        return AhoCorasick.PerformSearch(_root, text, _patterns, _comparison);
     }
 
     public IDictionary<string, IEnumerable<Match>> FindAll(IEnumerable<string> texts)
@@ -94,7 +97,7 @@ public sealed class TextMatcher
         {
             var patternLength = patternsList[id].Length;
             idMatches.Add((endIndex - patternLength + 1, endIndex, id));
-        });
+        }, _comparison);
 
         if (idMatches.Count == 0)
         {

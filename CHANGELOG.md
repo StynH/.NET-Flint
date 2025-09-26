@@ -1,0 +1,7 @@
+﻿# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.2.0] - 26-09-2025
+
+- Added optional `StringComparison` support for `TextMatcher`, with the default being `StringComparison.CurrentCulture` if not specified.

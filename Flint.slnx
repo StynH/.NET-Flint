@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="CHANGELOG.md" />
+    <File Path="README.md" />
+  </Folder>
   <Project Path="src/Flint.UnitTests/Flint.UnitTests.csproj" />
   <Project Path="src/Flint/Flint.csproj" />
 </Solution>

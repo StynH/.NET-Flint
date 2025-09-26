@@ -1,18 +1,20 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 
 namespace Flint.TextProcessing;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public class AhoCorasick
 {
-    internal static TrieNode BuildTrie(IEnumerable<string> patterns)
+    internal static TrieNode BuildTrie(IEnumerable<string> patterns, StringComparison comparison)
     {
         Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
 
         var root = new TrieNode();
         root.Fail = root;
 
-        patterns.ForEach((value, index) =>
+        var normalizedPatterns = patterns.Select(p => Normalize(p, comparison));
+        normalizedPatterns.ForEach((value, index) =>
         {
             var node = root;
             foreach (var character in value)
@@ -69,18 +71,18 @@ public class AhoCorasick
         }
     }
 
-    internal static void PerformSearchWithIds(TrieNode root, string text, Action<int, int> onMatch)
+    internal static void PerformSearchWithIds(TrieNode root, string text, Action<int, int> onMatch, StringComparison comparison)
     {
         Assertions.ThrowIfArgumentIsNull(root, nameof(root));
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
         Assertions.ThrowIfArgumentIsNull(onMatch, nameof(onMatch));
 
         var node = root;
+        var normalizedText = Normalize(text, comparison);
 
-        for (var i = 0; i < text.Length; ++i)
+        for (var i = 0; i < normalizedText.Length; ++i)
         {
             var character = text[i];
-
             while (node != root && !node.Children.TryGetValue(character, out var _))
             {
                 node = node.Fail;
@@ -94,7 +96,7 @@ public class AhoCorasick
         }
     }
 
-    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns)
+    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns, StringComparison comparison)
     {
         Assertions.ThrowIfArgumentIsNull(root, nameof(root));
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
@@ -106,15 +108,30 @@ public class AhoCorasick
         }
 
         var results = new List<Match>();
-        var patternsList = patterns.ToList();
+        var normalizedPatterns = patterns.Select(p => Normalize(p, comparison));
+        var normalizedText = Normalize(text, comparison);
 
-        PerformSearchWithIds(root, text, (endIndex, id) =>
+        PerformSearchWithIds(root, normalizedText, (endIndex, id) =>
         {
-            var match = patternsList.ElementAt(id);
+            var match = normalizedPatterns.ElementAt(id);
             var patternLength = match.Length;
             results.Add(new(endIndex - patternLength + 1, endIndex, match));
-        });
+        }, comparison);
 
         return results;
+    }
+
+    private static string Normalize(string input, StringComparison comparison)
+    {
+        return comparison switch
+        {
+            StringComparison.OrdinalIgnoreCase => input.ToUpperInvariant(),
+            StringComparison.CurrentCultureIgnoreCase => input.ToUpper(CultureInfo.CurrentCulture),
+            StringComparison.InvariantCultureIgnoreCase => input.ToUpper(CultureInfo.InvariantCulture),
+            StringComparison.CurrentCulture => input,
+            StringComparison.InvariantCulture => input,
+            StringComparison.Ordinal => input,
+            _ => input
+        };
     }
 }

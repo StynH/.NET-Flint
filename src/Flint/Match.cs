@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Flint;
+﻿namespace Flint;
 
 public record Match(int StartIndex, int EndIndex, string Value)
 {

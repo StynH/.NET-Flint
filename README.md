@@ -1,4 +1,4 @@
-# ![Icon](logo.png)
+﻿# ![Icon](logo.png)
 
 Flint is a lightweight, zero-dependency C# library that provides fast text matching utilities using the [Aho-Corasick algorithm](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm).
 
@@ -23,6 +23,28 @@ Output:
 ```
 Found 'dog' at index 4.
 Found 'cat' at index 19.
+```
+
+An optional ```StringComparison``` can be passed to ```TextMarcher```, influencing it's behavior when performing searches/replacement.
+If none is given, it will default to ```StringComparison.CurrentCulture```.
+
+```csharp
+using Flint;
+
+var matcher = new TextMatcher(new[] { "cat", "dog" }, StringComparison.OrdinalIgnoreCase);
+var results = matcher.Find("The DOG chased the CaT.");
+
+foreach (var match in results)
+{
+    Console.WriteLine($"Found '{match.Value}' at index {match.StartIndex}.");
+}
+```
+
+Output:
+
+```
+Found 'DOG' at index 4.
+Found 'CaT' at index 19.
 ```
 
 ### Scan multiple texts with `FindAll`

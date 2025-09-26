@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>0.1.1</Version>
+        <Version>0.2.0</Version>
         <Summary>A lightweight, zero-dependency library that provides fast text matching and replacement utilities.</Summary>
         <Description>A lightweight, zero-dependency library that provides fast text matching and replacement utilities.</Description>
         <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
@@ -23,4 +23,11 @@
         <None Include="..\..\README.md" Pack="true" PackagePath="" Visible="False" />
         <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" Visible="False" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <Version>0.2.0</Version>
+        <PackageReleaseNotes>
+            - Added optional StringComparison support for TextMatcher, with the default being StringComparison.CurrentCulture if not specified.
+        </PackageReleaseNotes>
+    </PropertyGroup>
 </Project>

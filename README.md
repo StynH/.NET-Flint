@@ -26,7 +26,7 @@ Found 'dog' at index 4.
 Found 'cat' at index 19.
 ```
 
-An optional ```StringComparison``` can be passed to ```TextMarcher```, influencing it's behavior when performing searches/replacement.
+An optional ```StringComparison``` can be passed to ```TextMatcher```, influencing it's behavior when performing searches/replacement.
 If none is given, it will default to ```StringComparison.CurrentCulture```.
 
 ```csharp

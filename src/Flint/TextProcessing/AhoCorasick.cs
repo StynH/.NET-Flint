@@ -82,7 +82,7 @@ public class AhoCorasick
 
         for (var i = 0; i < normalizedText.Length; ++i)
         {
-            var character = text[i];
+            var character = normalizedText[i];
             while (node != root && !node.Children.TryGetValue(character, out var _))
             {
                 node = node.Fail;
@@ -113,9 +113,10 @@ public class AhoCorasick
 
         PerformSearchWithIds(root, normalizedText, (endIndex, id) =>
         {
-            var match = normalizedPatterns.ElementAt(id);
-            var patternLength = match.Length;
-            results.Add(new(endIndex - patternLength + 1, endIndex, match));
+            var patternLength = normalizedPatterns.ElementAt(id).Length;
+            var start = endIndex - patternLength + 1;
+            var value = text.Substring(start, patternLength);
+            results.Add(new(start, endIndex, value));
         }, comparison);
 
         return results;

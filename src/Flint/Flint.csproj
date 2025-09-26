@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.2.1</Version>
         <Summary>A lightweight, zero-dependency library that provides fast text matching and replacement utilities.</Summary>
         <Description>A lightweight, zero-dependency library that provides fast text matching and replacement utilities.</Description>
         <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
@@ -25,9 +25,9 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <Version>0.2.0</Version>
+        <Version>0.2.1</Version>
         <PackageReleaseNotes>
-            - Added optional StringComparison support for TextMatcher, with the default being StringComparison.CurrentCulture if not specified.
+            - Fixed a bug where using ignore-case comparisons would return match values in uppercase
         </PackageReleaseNotes>
     </PropertyGroup>
 </Project>

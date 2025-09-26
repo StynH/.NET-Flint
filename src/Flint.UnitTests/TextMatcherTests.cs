@@ -230,6 +230,16 @@ public class TextMatcherTests
     }
 
     [TestMethod]
+    public void Given_OrdinalIgnoreCase_When_Find_Then_ReturnsValueFromText()
+    {
+        var matcher = new TextMatcher(["cat"], StringComparison.OrdinalIgnoreCase);
+        var results = matcher.Find("Where is my CaT man").ToList();
+
+        Assert.HasCount(1, results);
+        Assert.AreEqual("CaT", results[0].Value);
+    }
+
+    [TestMethod]
     public void Given_IgnoreCaseComparison_When_Replace_Then_ReplacesMatchesIrrespectiveOfCase()
     {
         var matcher = new TextMatcher(["jedi"], StringComparison.CurrentCultureIgnoreCase);

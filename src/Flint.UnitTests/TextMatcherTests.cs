@@ -249,4 +249,42 @@ public class TextMatcherTests
         Assert.Contains("[X]", replaced);
         Assert.DoesNotContain("Jedi", replaced);
     }
+
+    [TestMethod]
+    public void Given_MatchMode_ExactMatch_When_Find_Then_OnlyExactMatchesReturned()
+    {
+        var patterns = new[] { "cat" };
+        var matcher = new TextMatcher(patterns, StringComparison.Ordinal, MatchMode.ExactMatch);
+
+        var results = matcher.Find("concatenate cat catapult").ToList();
+
+        Assert.HasCount(1, results);
+        Assert.AreEqual("cat", results[0].Value);
+        Assert.AreEqual(12, results[0].StartIndex);
+    }
+
+    [TestMethod]
+    public void Given_MatchMode_Fuzzy_When_Find_Then_PartialMatchesReturned()
+    {
+        var patterns = new[] { "cat" };
+        var matcher = new TextMatcher(patterns, StringComparison.Ordinal, MatchMode.Fuzzy);
+
+        var results = matcher.Find("concatenate cat catapult").ToList();
+
+        Assert.IsGreaterThanOrEqualTo(3, results.Count);
+    }
+
+    [TestMethod]
+    public void Given_MatchMode_ExactMatchAndIgnoreCase_When_Find_Then_MatchesAreCaseInsensitiveButWholeWords()
+    {
+        var patterns = new[] { "cat" };
+        var text = "concatenate Cat catapult CAT";
+        var matcher = new TextMatcher(patterns, StringComparison.OrdinalIgnoreCase, MatchMode.ExactMatch);
+
+        var results = matcher.Find(text).ToList();
+
+        Assert.HasCount(2, results);
+        Assert.IsTrue(results.Any(m => m.Value == "Cat" && m.StartIndex == text.IndexOf("Cat", StringComparison.Ordinal)));
+        Assert.IsTrue(results.Any(m => m.Value == "CAT" && m.StartIndex == text.IndexOf("CAT", StringComparison.Ordinal)));
+    }
 }

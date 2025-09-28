@@ -7,18 +7,28 @@ public sealed class TextMatcher
     private readonly TrieNode _root;
     private readonly IEnumerable<string> _patterns;
     private readonly StringComparison _comparison;
+    private readonly MatchMode _mode;
 
-    public TextMatcher(IEnumerable<string> patterns, StringComparison comparison)
+    public TextMatcher(IEnumerable<string> patterns, StringComparison comparison, MatchMode mode)
     {
         Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
 
         _patterns = patterns;
         _comparison = comparison;
+        _mode = mode;
         _root = AhoCorasick.BuildTrie(_patterns, _comparison);
         AhoCorasick.BuildFailureLinks(_root);
     }
 
-    public TextMatcher(IEnumerable<string> patterns) : this(patterns, StringComparison.CurrentCulture)
+    public TextMatcher(IEnumerable<string> patterns, StringComparison comparison) : this(patterns, comparison, MatchMode.Fuzzy)
+    {
+    }
+
+    public TextMatcher(IEnumerable<string> patterns, MatchMode mode) : this(patterns, StringComparison.CurrentCulture, mode)
+    {
+    }
+
+    public TextMatcher(IEnumerable<string> patterns) : this(patterns, StringComparison.CurrentCulture, MatchMode.Fuzzy)
     {
     }
 
@@ -26,7 +36,15 @@ public sealed class TextMatcher
     {
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
 
-        return AhoCorasick.PerformSearch(_root, text, _patterns, _comparison);
+        return AhoCorasick.PerformSearch(_root, text, _patterns, _comparison, _mode);
+    }
+
+    public void Find(string text, Action<Match> onMatchCallback)
+    {
+        Assertions.ThrowIfArgumentIsNull(text, nameof(text));
+        Assertions.ThrowIfArgumentIsNull(onMatchCallback, nameof(onMatchCallback));
+
+        AhoCorasick.PerformSearchWithCallback(_root, text, _patterns, onMatchCallback, _comparison, _mode);
     }
 
     public IDictionary<string, IEnumerable<Match>> FindAll(IEnumerable<string> texts)
@@ -41,6 +59,19 @@ public sealed class TextMatcher
         }
 
         return results;
+    }
+
+    public void FindAll(IEnumerable<string> texts, Action<string, Match> onMatchCallback)
+    {
+        Assertions.ThrowIfArgumentIsNull(texts, nameof(texts));
+
+        foreach (var text in texts)
+        {
+            Find(text, (match) =>
+            {
+                onMatchCallback(text, match);
+            });
+        }
     }
 
     public string Replace(string text, string replacement)

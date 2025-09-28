@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
+using Flint;
 
 namespace Flint.TextProcessing;
 
@@ -96,7 +97,7 @@ public class AhoCorasick
         }
     }
 
-    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns, StringComparison comparison)
+    internal static IEnumerable<Match> PerformSearch(TrieNode root, string text, IEnumerable<string> patterns, StringComparison comparison, MatchMode mode)
     {
         Assertions.ThrowIfArgumentIsNull(root, nameof(root));
         Assertions.ThrowIfArgumentIsNull(text, nameof(text));
@@ -104,11 +105,12 @@ public class AhoCorasick
 
         if (!patterns.Any())
         {
-            return [];
+            return Array.Empty<Match>();
         }
 
         var results = new List<Match>();
-        var normalizedPatterns = patterns.Select(p => Normalize(p, comparison));
+        var normalizedPatterns = patterns.Select(p => Normalize(p, comparison)).ToList();
+        var originalPatterns = patterns.ToList();
         var normalizedText = Normalize(text, comparison);
 
         PerformSearchWithIds(root, normalizedText, (endIndex, id) =>
@@ -116,10 +118,65 @@ public class AhoCorasick
             var patternLength = normalizedPatterns.ElementAt(id).Length;
             var start = endIndex - patternLength + 1;
             var value = text.Substring(start, patternLength);
+
+            if (mode == MatchMode.ExactMatch)
+            {
+                if (!IsWholeWord(text, start, endIndex))
+                {
+                    return;
+                }
+
+                var originalPattern = originalPatterns.ElementAt(id);
+                if (!string.Equals(value, originalPattern, comparison))
+                {
+                    return;
+                }
+            }
+
             results.Add(new(start, endIndex, value));
         }, comparison);
 
         return results;
+    }
+
+    internal static void PerformSearchWithCallback(TrieNode root, string text, IEnumerable<string> patterns, Action<Match> onMatch, StringComparison comparison, MatchMode mode)
+    {
+        Assertions.ThrowIfArgumentIsNull(root, nameof(root));
+        Assertions.ThrowIfArgumentIsNull(text, nameof(text));
+        Assertions.ThrowIfArgumentIsNull(patterns, nameof(patterns));
+        Assertions.ThrowIfArgumentIsNull(onMatch, nameof(onMatch));
+
+        if (!patterns.Any())
+        {
+            return;
+        }
+
+        var normalizedPatterns = patterns.Select(p => Normalize(p, comparison)).ToList();
+        var originalPatterns = patterns.ToList();
+        var normalizedText = Normalize(text, comparison);
+
+        PerformSearchWithIds(root, normalizedText, (endIndex, id) =>
+        {
+            var patternLength = normalizedPatterns.ElementAt(id).Length;
+            var start = endIndex - patternLength + 1;
+            var value = text.Substring(start, patternLength);
+
+            if (mode == MatchMode.ExactMatch)
+            {
+                if (!IsWholeWord(text, start, endIndex))
+                {
+                    return;
+                }
+
+                var originalPattern = originalPatterns.ElementAt(id);
+                if (!string.Equals(value, originalPattern, comparison))
+                {
+                    return;
+                }
+            }
+
+            onMatch(new Match(start, endIndex, value));
+        }, comparison);
     }
 
     private static string Normalize(string input, StringComparison comparison)
@@ -134,5 +191,22 @@ public class AhoCorasick
             StringComparison.Ordinal => input,
             _ => input
         };
+    }
+
+    private static bool IsWholeWord(string text, int start, int end)
+    {
+        static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c == '_';
+
+        if (start > 0 && IsWordChar(text[start - 1]))
+        {
+            return false;
+        }
+
+        if (end + 1 < text.Length && IsWordChar(text[end + 1]))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

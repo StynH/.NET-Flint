@@ -48,6 +48,27 @@ Found 'DOG' at index 4.
 Found 'CaT' at index 19.
 ```
 
+### Find with a callback
+
+`TextMatcher` provides an overload of `Find` that accepts a callback invoked for each match. This can be convenient to process matches as they are found without allocating a results collection.
+
+```csharp
+using Flint;
+
+var matcher = new TextMatcher(new[] { "cat", "dog" });
+matcher.Find("The dog chased the cat.", match =>
+{
+    Console.WriteLine($"Found '{match.Value}' at index {match.StartIndex}.");
+});
+```
+
+Output:
+
+```
+Found 'dog' at index 4.
+Found 'cat' at index 19.
+```
+
 ### Scan multiple texts with `FindAll`
 
 ```csharp
@@ -84,6 +105,60 @@ Found 'dog' at index 4.
 A bird watched them from above.
 Found 'bird' at index 2.
 No animals here.
+```
+
+If you need to scan many input strings and handle matches as they are discovered, use the `FindAll` overload that accepts an `Action<string, Match>` callback. The callback receives the original text and the match.
+
+```csharp
+using Flint;
+
+var patterns = new[] { "cat", "dog" };
+var matcher = new TextMatcher(patterns);
+
+var texts = new[]
+{
+    "The dog chased the cat.",
+    "A bird watched from above.",
+};
+
+matcher.FindAll(texts, (text, match) =>
+{
+    Console.WriteLine(text);
+    Console.WriteLine($"Found '{match.Value}' at index {match.StartIndex}.");
+});
+```
+
+Example output:
+
+```
+The dog chased the cat.
+Found 'dog' at index 4.
+Found 'cat' at index 19.
+A bird watched from above.
+```
+
+### Exact (whole-word) matching with `MatchMode`
+
+The `MatchMode` enum lets you require matches to be whole words. This prevents short patterns from matching inside longer words (for example, preventing "he" from matching inside "she").
+
+```csharp
+using Flint;
+
+var patterns = new[] { "he", "she" };
+var matcher = new TextMatcher(patterns, StringComparison.CurrentCulture, MatchMode.ExactMatch);
+
+var results = matcher.Find("she sells seashells.");
+
+foreach (var m in results)
+{
+    Console.WriteLine($"Found '{m.Value}' at index {m.StartIndex}.");
+}
+```
+
+Output (only the whole-word `she` is matched):
+
+```
+Found 'she' at index 0.
 ```
 
 ### Overlapping and nested matches

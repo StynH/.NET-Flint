@@ -1,5 +1,5 @@
 ﻿# ![Icon](logo.png) 
-![NuGet Version](https://img.shields.io/nuget/v/Flint)
+![NuGet Version](https://img.shields.io/nuget/v/Flint) ![NuGet Downloads](https://img.shields.io/nuget/dt/Flint)
 
 Flint is a lightweight, zero-dependency C# library that provides fast text matching utilities using the [Aho-Corasick algorithm](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm).
 
@@ -133,6 +133,7 @@ Example output:
 ```
 The dog chased the cat.
 Found 'dog' at index 4.
+The dog chased the cat.
 Found 'cat' at index 19.
 A bird watched from above.
 ```

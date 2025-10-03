@@ -15,7 +15,7 @@
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <NoWarn>$(NoWarn);IDE0058;</NoWarn>
         <PackageTags>text aho-corasick matching replacer replacing</PackageTags>
-        <RepositoryUrl>https://github.com/StynH/.NET-Flint</RepositoryUrl>
+        <RepositoryUrl>https://github.com/StynH/Flint</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

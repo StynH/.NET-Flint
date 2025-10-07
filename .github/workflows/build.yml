@@ -25,4 +25,4 @@ jobs:
       run: dotnet build ./src/Flint/Flint.csproj --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test ./src/Flint.UnitTests/Flint.UnitTests.csproj --configuration Release --no-build --verbosity normal
+      run: dotnet test ./src/Flint.UnitTests/Flint.UnitTests.csproj --configuration Release --no-build --logger "console;verbosity=detailed"
